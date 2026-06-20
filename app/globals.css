@@ -1,0 +1,990 @@
+/* SundayInfo — design foundation.
+   Sunday Suite brand (gold #EBB84B · ink · paper; Playfair Display + Hanken
+   Grotesk). Two surfaces with very different needs share these tokens:
+   the mobile-first ADMIN (dark suite style) and the DISPLAY (/skjerm), which
+   must read from across a room on cheap TV panels — bigger type, calmer
+   motion (opacity-only transitions), and per-zone themes. */
+
+:root {
+  /* Suite brand gold — canonical values from the marketing site. */
+  --gold: #ebb84b;
+  --gold-light: #f2d58a;
+  --gold-deep: #d4a23a;
+  --gold-grad: linear-gradient(135deg, #f2d58a 0%, #ebb84b 45%, #d4a23a 100%);
+
+  --ink: #11141b;
+  --ink-2: #181c25;
+  --ink-3: #1e232e;
+  --ink-soft: #272d3a;
+  --ink-line: rgba(255, 255, 255, 0.08);
+  --ink-line-strong: rgba(255, 255, 255, 0.16);
+
+  --paper: #faf7f0;
+  --txt: #f3efe6;
+  --txt-dim: #9aa0ad;
+  --txt-faint: #6b7280;
+
+  --ok: #5ec27a;
+  --warn: #e0894a;
+  --danger: #d2554d;
+
+  /* per-zone accent — overridden by the liturgical theme */
+  --accent: var(--gold);
+
+  --display: var(--font-display), "Playfair Display", Georgia, serif;
+  --body: var(--font-body), "Hanken Grotesk", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  --maxw: 760px;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --radius: 16px;
+  --radius-sm: 11px;
+  --shadow-1: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 24px 60px -28px rgba(0, 0, 0, 0.7);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+/* Screen-reader-only — visible to assistive tech, hidden visually. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body {
+  font-family: var(--body);
+  color: var(--txt);
+  line-height: 1.55;
+  min-height: 100dvh;
+  background: radial-gradient(140% 100% at 50% -20%, #232938 0%, #161b24 45%, var(--ink) 80%);
+}
+a {
+  color: var(--gold);
+  text-decoration: none;
+}
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+input,
+textarea,
+select {
+  font-family: inherit;
+  /* ≥16px stops iOS Safari from auto-zooming the page on focus. */
+  font-size: max(1rem, 16px);
+}
+
+/* Keyboard focus ring (only on keyboard nav, never on mouse click) — a clear,
+   on-brand gold halo for AA-visible focus across every interactive element. */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 55%, transparent);
+  border-radius: 6px;
+}
+.btn:focus-visible,
+a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+/* The field inputs already draw their own gold outline on :focus; keep the
+   ring on :focus-visible consistent and avoid a doubled outline. */
+.field input:focus-visible,
+.field textarea:focus-visible,
+.field select:focus-visible {
+  outline: none;
+}
+
+/* Respect users who ask for less motion — kill transitions/animations. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ════════════════ Admin UI ════════════════ */
+
+.shell {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 20px 16px 96px;
+}
+/* Centered single-column surfaces (login, onboarding, error, 404). Caps width
+   without overflowing narrow phones. */
+.shell-narrow {
+  max-width: min(440px, 100%);
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0 18px;
+}
+.brand {
+  font-family: var(--display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--txt);
+}
+.brand em {
+  color: var(--gold);
+  font-style: normal;
+}
+.pagetitle {
+  font-family: var(--display);
+  font-size: 1.7rem;
+  font-weight: 800;
+  margin: 6px 0 4px;
+}
+.lede {
+  color: var(--txt-dim);
+  margin-bottom: 18px;
+}
+
+.card {
+  background: linear-gradient(180deg, var(--ink-3) 0%, var(--ink-2) 100%);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-1);
+}
+.card h2 {
+  font-family: var(--display);
+  font-size: 1.15rem;
+  margin-bottom: 10px;
+}
+.card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ink-line);
+}
+.card-row:last-child {
+  border-bottom: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  min-height: 44px; /* comfortable touch target (WCAG 2.5.5) */
+  font-weight: 700;
+  font-size: 1rem;
+  background: var(--gold-grad);
+  color: #2a2008;
+  transition: transform 0.15s var(--ease), filter 0.15s var(--ease);
+}
+.btn:hover {
+  filter: brightness(1.04);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--txt);
+  border: 1px solid var(--ink-line-strong);
+}
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn-sm {
+  padding: 7px 13px;
+  min-height: 0; /* compact inline action — opts out of the 44px floor */
+  font-size: 0.88rem;
+}
+.btn-block {
+  width: 100%;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+.field label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 6px;
+  color: var(--txt-dim);
+}
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  background: var(--ink);
+  border: 1px solid var(--ink-line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--txt);
+  padding: 11px 13px;
+}
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: -1px;
+}
+.field textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.hint {
+  font-size: 0.84rem;
+  color: var(--txt-faint);
+  margin-top: 5px;
+}
+
+.badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.badge-ok {
+  background: rgba(94, 194, 122, 0.15);
+  color: var(--ok);
+}
+.badge-warn {
+  background: rgba(224, 137, 74, 0.15);
+  color: var(--warn);
+}
+.badge-danger {
+  background: rgba(210, 85, 77, 0.15);
+  color: var(--danger);
+}
+.badge-dim {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--txt-dim);
+}
+
+.tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  background: rgba(17, 20, 27, 0.94);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--ink-line);
+  padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+  z-index: 50;
+}
+.tabs a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--txt-dim);
+  min-width: 56px;
+  min-height: 44px; /* comfortable touch target (WCAG 2.5.5) */
+  justify-content: center;
+  border-radius: 10px;
+}
+.tabs a.active {
+  color: var(--gold);
+}
+.tabs a .ticon {
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+/* ════════════════ Screen cockpit (/skjermer) ════════════════ */
+
+.scr {
+  border: 1px solid var(--ink-line);
+  border-radius: var(--radius-sm);
+  padding: 13px 14px;
+  margin-bottom: 10px;
+  background: var(--ink-2);
+}
+.scr-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.scr-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--txt-faint);
+}
+.scr-dot.on {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px rgba(94, 194, 122, 0.18);
+}
+.scr-dot.off {
+  background: var(--danger);
+}
+.scr-name {
+  font-weight: 700;
+  font-size: 1.02rem;
+}
+.scr-meta {
+  margin-top: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.84rem;
+  color: var(--txt-dim);
+}
+.scr-meta .k {
+  color: var(--txt-faint);
+  margin-right: 6px;
+}
+.scr-showing {
+  color: var(--txt);
+}
+.scr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 11px;
+}
+.scr-actions select {
+  background: var(--ink);
+  color: var(--txt);
+  border: 1px solid var(--ink-line-strong);
+  border-radius: var(--radius-sm);
+  padding: 7px 9px;
+  font-size: 0.88rem;
+}
+.scr-flash {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ok);
+  margin-top: 8px;
+}
+
+.error-text {
+  color: var(--danger);
+  font-weight: 600;
+  margin: 8px 0;
+}
+/* Small, consistent inline error — for widgets that fetch and can fail
+   without taking down the page (e.g. the dashboard's screen list). */
+.inline-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 2px;
+  padding: 9px 12px;
+  border: 1px solid rgba(210, 85, 77, 0.4);
+  border-radius: var(--radius-sm);
+  background: rgba(210, 85, 77, 0.12);
+  color: #f0a39c;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.inline-error::before {
+  content: "!";
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.empty {
+  color: var(--txt-faint);
+  text-align: center;
+  padding: 26px 10px;
+}
+
+/* ════════════════ Loading states ════════════════ */
+
+/* Centered spinner for full-screen route loaders. */
+.loading-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--txt-dim);
+}
+.spinner {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid var(--ink-line-strong);
+  border-top-color: var(--gold);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Shimmer placeholder blocks for the dashboard skeleton. */
+.skel {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    100deg,
+    var(--ink-soft) 30%,
+    rgba(255, 255, 255, 0.07) 50%,
+    var(--ink-soft) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.skel-line {
+  height: 14px;
+  margin: 9px 0;
+}
+.skel-title {
+  height: 22px;
+  width: 45%;
+  margin-bottom: 16px;
+}
+.skel-row {
+  height: 44px;
+  margin-bottom: 10px;
+}
+
+/* ════════════════ Display (/skjerm) ════════════════ */
+
+.disp {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-size: clamp(16px, 2.2vw, 30px); /* everything scales off this */
+  background: radial-gradient(120% 110% at 50% -10%, #252b3a 0%, #161b24 50%, var(--ink) 85%);
+  color: var(--txt);
+}
+
+/* light "paper" theme — bright foyers */
+.disp.theme-light,
+.disp.theme-liturgical {
+  background: radial-gradient(120% 110% at 50% -10%, #ffffff 0%, var(--paper) 60%, #efe9dc 100%);
+  color: #232323;
+}
+.disp.theme-light {
+  --accent: var(--gold-deep);
+}
+/* .theme-liturgical sets --accent inline from the church-year module */
+
+.disp-stage {
+  position: relative;
+  flex: 1;
+}
+.disp-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6vh 7vw;
+  opacity: 0;
+  transition: opacity 0.9s var(--ease); /* opacity only: cheap on TV GPUs */
+  pointer-events: none;
+}
+.disp-slide.on {
+  opacity: 1;
+}
+
+.disp-kicker {
+  font-size: 0.85em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.7em;
+}
+.disp-title {
+  font-family: var(--display);
+  font-size: 2.6em;
+  font-weight: 800;
+  line-height: 1.12;
+  max-width: 24ch;
+}
+.disp-body {
+  font-size: 1.25em;
+  line-height: 1.5;
+  max-width: 38ch;
+  margin-top: 0.9em;
+  white-space: pre-wrap;
+}
+.disp-ref {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 1.1em;
+  color: var(--accent);
+  margin-top: 1.1em;
+}
+.disp-img {
+  max-width: 78vw;
+  max-height: 62vh;
+  border-radius: 14px;
+  object-fit: contain;
+}
+.disp-qr {
+  width: 9.5em;
+  height: 9.5em;
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.55em;
+  margin-top: 1em;
+}
+
+.disp-count {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 4.6em;
+  line-height: 1.05;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.disp-program {
+  margin-top: 1.1em;
+  text-align: left;
+  font-size: 1.05em;
+  max-width: 30ch;
+  width: 100%;
+}
+.disp-program .prow {
+  display: flex;
+  gap: 1em;
+  padding: 0.34em 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.22);
+}
+.disp-program .prow:last-child {
+  border-bottom: none;
+}
+.disp-program .ptime {
+  font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  min-width: 3.2em;
+}
+.disp-program .psub {
+  display: block;
+  font-size: 0.82em;
+  opacity: 0.65;
+}
+
+.disp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  padding: 0.7em 1.6em 0.9em;
+  font-size: 0.95em;
+  opacity: 0.85;
+}
+.disp-footer .fchurch {
+  font-weight: 700;
+}
+.disp-footer .fnext {
+  color: var(--accent);
+  font-weight: 600;
+}
+.disp-clock {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 1.15em;
+}
+.disp-offline {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+  background: var(--warn);
+  margin-right: 0.5em;
+  vertical-align: middle;
+}
+
+/* emergency overlay — unmissable, theme-independent */
+.disp-emergency {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8vh 8vw;
+  background: rgba(140, 28, 22, 0.97);
+  color: #fff;
+}
+.disp-emergency .etitle {
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 1.1em;
+  margin-bottom: 0.8em;
+  opacity: 0.9;
+}
+.disp-emergency .ebody {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 2.6em;
+  line-height: 1.15;
+  max-width: 22ch;
+}
+
+/* pairing screen */
+.pairing {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6vh 6vw;
+  background: radial-gradient(120% 110% at 50% -10%, #252b3a 0%, var(--ink) 75%);
+  font-size: clamp(16px, 2.2vw, 30px);
+}
+.pairing h1 {
+  font-family: var(--display);
+  font-size: 1.8em;
+  margin-bottom: 0.4em;
+}
+.pairing .pcode {
+  font-family: var(--mono);
+  font-size: 4.2em;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  margin: 0.25em 0;
+  font-variant-numeric: tabular-nums;
+}
+.pairing .psteps {
+  color: var(--txt-dim);
+  max-width: 36ch;
+  font-size: 0.95em;
+  line-height: 1.6;
+}
+.pairing .psteps b {
+  color: var(--txt);
+}
+
+/* ════════════════ SundayWelcome ════════════════ */
+
+/* Dashboard "new" stat — big tappable number → inbox. */
+.wl-stat {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.wl-stat-num {
+  font-family: var(--display);
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1;
+  min-width: 1.6em;
+  text-align: center;
+}
+.wl-url {
+  display: block;
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: var(--ink);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--radius-sm);
+  color: var(--txt-dim);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  word-break: break-all;
+}
+
+/* Public connect form. */
+.wl-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 2px;
+}
+.wl-check {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 2.2rem;
+  color: var(--ink);
+  background: var(--gold-grad);
+  box-shadow: var(--shadow-1);
+}
+.wl-consent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 8px 0;
+  font-size: 0.92rem;
+  color: var(--txt-dim);
+  cursor: pointer;
+}
+.wl-consent input {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--gold);
+}
+
+/* Interest chips (checkbox pills). */
+.wl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.wl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ink-line-strong);
+  background: var(--ink);
+  color: var(--txt-dim);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.15s var(--ease);
+}
+.wl-chip input {
+  display: none;
+}
+.wl-chip.on {
+  border-color: var(--gold);
+  color: var(--ink);
+  background: var(--gold-grad);
+  font-weight: 600;
+}
+
+/* Inbox list. */
+.wl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wl-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+  transition: border-color 0.15s var(--ease);
+}
+.wl-row:hover {
+  border-color: var(--ink-line-strong);
+}
+.wl-row-main {
+  min-width: 0;
+}
+.wl-row-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+.wl-row-msg {
+  margin-top: 6px;
+  color: var(--txt-dim);
+  font-size: 0.9rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.wl-row-time {
+  color: var(--txt-faint);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Inbox status filter pills. */
+.wl-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  border: 0;
+  padding: 0;
+}
+.wl-filter {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ink-line);
+  background: transparent;
+  color: var(--txt-dim);
+  font-size: 0.85rem;
+}
+.wl-filter.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
+}
+.wl-filter-n {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+/* Connection detail. */
+.wl-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 8px 0;
+}
+.wl-contact-link {
+  font-weight: 600;
+}
+.wl-msg {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--ink);
+  border-radius: var(--radius-sm);
+  white-space: pre-wrap;
+}
+.wl-notes {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wl-note {
+  padding: 10px 12px;
+  background: var(--ink);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--radius-sm);
+}
+
+/* Settings: QR + interest editor. */
+.wl-qrbox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+.wl-qrbox img {
+  background: var(--paper);
+  padding: 12px;
+  border-radius: var(--radius);
+}
+.wl-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.wl-interest-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wl-interest-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.wl-interest-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Foyer welcome board (/skjerm/[slug]) — warm, readable across a room. */
+.wl-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 18px;
+  padding: 6vh 6vw;
+  color: var(--ink);
+  background: radial-gradient(130% 100% at 50% 0%, #fffdf8 0%, var(--paper) 55%, #f0e8d6 100%);
+}
+.wl-screen-church {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  color: var(--gold-deep);
+  font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+}
+.wl-screen-title {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(2.6rem, 8vw, 6rem);
+  line-height: 1.02;
+  color: var(--ink);
+}
+.wl-screen-intro {
+  font-size: clamp(1.1rem, 2.4vw, 1.9rem);
+  max-width: 22ch;
+  color: var(--ink-soft);
+}
+.wl-screen-qr {
+  margin-top: 1vh;
+}
+.wl-screen-qr img {
+  width: clamp(220px, 34vh, 560px);
+  height: clamp(220px, 34vh, 560px);
+  background: #fff;
+  padding: clamp(12px, 1.6vh, 24px);
+  border-radius: 24px;
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.4);
+}
+.wl-screen-cta {
+  margin-top: 14px;
+  font-weight: 700;
+  font-size: clamp(1.1rem, 2.4vw, 1.8rem);
+  color: var(--ink);
+}

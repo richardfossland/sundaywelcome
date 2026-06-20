@@ -1,0 +1,43 @@
+# CI — every push/PR runs the same gate as local `npm run check` + the Docker Postgres migration tests.
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+
+  db:
+    # scripts/test-db.sh spins up postgres:16 in Docker and applies the real
+    # migration twice (idempotency) + the SQL logic assertions — the same proof
+    # run before deploys. GitHub's ubuntu runners ship Docker, so this verifies
+    # the welcome schema end-to-end.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/test-db.sh
+
+  build:
+    # The OpenNext/Cloudflare build (cf:build) catches bundling/runtime breaks
+    # that `check` (tsc/eslint/vitest) does NOT — e.g. a Node-runtime middleware
+    # OpenNext rejects — which otherwise only surface at deploy time. (No
+    # Cloudflare auth needed: this builds the Worker, it does not deploy.)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run cf:build
