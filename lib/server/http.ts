@@ -38,6 +38,13 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
 }
 
 export function clientIp(req: Request): string {
+  // Prefer Cloudflare's CF-Connecting-IP: it is set by the edge and cannot be
+  // spoofed by the caller. X-Forwarded-For is client-supplied, so keying the
+  // rate limiter on its first entry let an attacker mint a fresh bucket per
+  // request (X-Forwarded-For: <random>) and bypass the cap entirely. Fall back
+  // to XFF only when CF-Connecting-IP is absent (e.g. local dev).
+  const cf = req.headers.get("cf-connecting-ip");
+  if (cf) return cf.trim();
   const fwd = req.headers.get("x-forwarded-for");
   return fwd?.split(",")[0]?.trim() || "local";
 }
