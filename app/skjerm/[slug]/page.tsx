@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 
+import { SkjermVisning } from "@/lib/client/storskjerm/SkjermVisning";
 import {
   createPublicServiceClient,
   createServiceClient,
@@ -53,6 +54,7 @@ export default async function WelcomeScreen({
 
   return (
     <div className="wl-screen">
+      <SkjermVisning />
       <p className="wl-screen-church">{church.name as string}</p>
       <h1 className="wl-screen-title">{headline}</h1>
       <p className="wl-screen-intro">{intro}</p>
