@@ -7,6 +7,7 @@ import { api, errorText } from "@/lib/client/api";
 import { shareBase } from "@/lib/client/base";
 import { useChurch } from "@/lib/client/useChurch";
 import AdminShell from "@/app/components/AdminShell";
+import { StorskjermButton } from "@/lib/client/storskjerm/StorskjermButton";
 import type { Interest, WelcomeSettings } from "@/lib/types";
 
 type Member = { userId: string; email: string | null; role: "admin" | "follower" };
@@ -131,6 +132,7 @@ export default function SettingsPage() {
               >
                 Åpne storskjerm
               </a>
+              <StorskjermButton url={`${base}/skjerm/${slug}`} />
             </div>
             <code className="wl-url">{formUrl}</code>
           </div>
